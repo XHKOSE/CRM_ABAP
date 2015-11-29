@@ -1,4 +1,4 @@
-# Welcome to my CRM ABAP Repository
+# Welcome to my ABAP Repository
 
 This repository covers the ABAP source codes related to SAP's Customer Relationship Management (CRM) and Solution Manager (SOLMAN) solutions.
 

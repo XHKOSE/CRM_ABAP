@@ -1,25 +1,3 @@
-class ZCL_IM_ZCRM_TRG_ALERT definition
-  public
-  final
-  create public .
-
-*"* public components of class ZCL_IM_ZCRM_TRG_ALERT
-*"* do not include other source files here!!!
-public section.
-
-  interfaces IF_EX_EXEC_METHODCALL_PPF .
-*"* protected components of class ZCL_IM_ZCRM_TRG_ALERT
-*"* do not include other source files here!!!
-protected section.
-*"* private components of class ZCL_IM_ZCRM_TRG_ALERT
-*"* do not include other source files here!!!
-private section.
-ENDCLASS.
-
-
-
-CLASS ZCL_IM_ZCRM_TRG_ALERT IMPLEMENTATION.
-
 
 METHOD if_ex_exec_methodcall_ppf~execute .
 *---------------------------------------------------------------------*

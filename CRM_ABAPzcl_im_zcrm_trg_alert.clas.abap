@@ -180,7 +180,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
       CLEAR exs_orderadm_h.
 
       READ TABLE ext_orderadm_h INTO exs_orderadm_h INDEX 1
-                                TRANSPORTING object_id.
+                                TRANSPORTING guid object_id.
 
       IF sy-subrc = 0.
 

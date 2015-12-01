@@ -3,11 +3,11 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 *---------------------------------------------------------------------*
 *       METHOD if_ex_exec_methodcall_ppf~execute                      *
 *---------------------------------------------------------------------*
-*  Çağrı merkezi yetkilisine uyarı düşürme                            *
+*  Triggering alerts for specific recipients                          *
 *---------------------------------------------------------------------*
 
-  INCLUDE crm_object_names_con.
-  INCLUDE crm_object_kinds_con.
+  INCLUDE crm_object_names_con. " Constants for object names
+  INCLUDE crm_object_kinds_con. " Constants for kinds
 
   DATA  lc_action_execute     TYPE REF TO cl_action_execute.
   DATA  lv_message            TYPE bapi_msg.
@@ -36,7 +36,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
         cv_log_handle   TYPE balloghndl.
 
 *--------------------------------------------------------------------*
-* Makro: Değişkenleri tayin etme
+* Macro: Seting elements in alert content
 *--------------------------------------------------------------------*
 
   DEFINE set_element.
@@ -53,7 +53,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
     if sy-subrc = 0.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
       message i046(zcrm) with &1 into lv_message.
 
@@ -62,7 +62,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
     else.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
       message e047(zcrm) with &1 into lv_message.
 
@@ -74,7 +74,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
   END-OF-DEFINITION.
 
 *--------------------------------------------------------------------*
-* Belgenin başlık GUID'ini al.
+* Get header GUID of the related business transactioh
 *--------------------------------------------------------------------*
 
   CREATE OBJECT lc_action_execute.
@@ -95,10 +95,10 @@ METHOD if_ex_exec_methodcall_ppf~execute .
         et_container   = ext_container.
 
 *--------------------------------------------------------------------*
-* Belgenin başlık bilgilerini ve muhatap bilgilerini oku
+* Read transaction header details and partners
 *--------------------------------------------------------------------*
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
     MESSAGE i049(zcrm) INTO lv_message.
 
@@ -134,14 +134,14 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
     IF sy-subrc <> 0.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
       MESSAGE e048(zcrm) INTO lv_message.
 
       cl_log_ppf=>add_message( ip_handle       = ip_application_log
                                ip_problemclass = sppf_pclass_1 ).
 
-*   Sonucu belirle
+*   Set rp_status (result)
 
       rp_status = sppf_status_error.
 
@@ -150,10 +150,10 @@ METHOD if_ex_exec_methodcall_ppf~execute .
     ELSE.
 
 *--------------------------------------------------------------------*
-* Değişkenlerin tayin edilmesi
+* Filling containers in alert content (a.k.a container elements)
 *--------------------------------------------------------------------*
 
-*--> Belge numarası
+*--> Business transaction ID (OBJECT_ID)
 
       CLEAR exs_orderadm_h.
 
@@ -162,13 +162,13 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
       IF sy-subrc = 0.
 
-*   Değişkeni tayin et
+*   Fill container element (OBJECT_ID)
 
         set_element: 'OBJECT_ID' exs_orderadm_h-object_id. " Note 821188
 
       ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE e050(zcrm) INTO lv_message.
 
@@ -177,18 +177,18 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
       ENDIF.
 
-*--> Çağrı merkezi yetkilisi Adı - Soyadı
+*--> Specific partner's first name and last name (MC_NAME1, MC_NAME2)
 
       CLEAR exs_partner.
 
       READ TABLE ext_partner INTO exs_partner
-                             WITH KEY partner_fct = 'AGENT_PARTNER_FCT'
+                             WITH KEY partner_fct = 'AGENT_PARTNER_FCT' " Specific partner function
                                       ref_kind    = gc_object_kind-orderadm_h
                              TRANSPORTING bp_partner_guid.
 
       IF sy-subrc = 0.
 
-*   Muhatabın adı soyadını al
+*   Obtain business partner's first and last name
 
         CLEAR exs_but000.
 
@@ -200,14 +200,14 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         IF exs_but000 IS NOT INITIAL.
 
-*   Değişkenleri tayin et
+*   Fill container elements (MC_NAME1, MC_NAME2)
 
           set_element: 'MC_NAME1' exs_but000-mc_name1. " Note 821188
           set_element: 'MC_NAME2' exs_but000-mc_name2. " Note 821188
 
         ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
           MESSAGE e052(zcrm) INTO lv_message.
 
@@ -217,10 +217,10 @@ METHOD if_ex_exec_methodcall_ppf~execute .
         ENDIF.
 
 *--------------------------------------------------------------------*
-* Alıcının belirlenmesi ve tayini
+* Recipient determination
 *--------------------------------------------------------------------*
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE i053(zcrm) INTO lv_message.
 
@@ -242,14 +242,14 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         IF sy-subrc <> 0 OR exv_username IS INITIAL.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
           MESSAGE e054(zcrm) INTO lv_message.
 
           cl_log_ppf=>add_message( ip_handle       = ip_application_log
                                    ip_problemclass = sppf_pclass_1 ).
 
-*   Sonucu belirle
+*   Set rp_status (result)
 
           rp_status = sppf_status_error.
 
@@ -257,7 +257,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         ELSE.
 
-*   Alıcıları tayin et
+*   Set recipients
 
           CLEAR: ims_recipients,
                  imt_recipients.
@@ -266,7 +266,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
           APPEND ims_recipients TO imt_recipients.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
           MESSAGE i055(zcrm) WITH exv_username INTO lv_message.
 
@@ -277,14 +277,14 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
       ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE e051(zcrm) INTO lv_message.
 
         cl_log_ppf=>add_message( ip_handle       = ip_application_log
                                  ip_problemclass = sppf_pclass_1 ).
 
-*   Sonucu belirle
+*   Set rp_status (result)
 
         rp_status = sppf_status_error.
 
@@ -293,7 +293,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
       ENDIF.
 
 *--------------------------------------------------------------------*
-* Web UI bağlantısının belirlenmesi (Sonraki işlemler için)
+* Acquiring Web UI navigation link for "activities" in alert
 *--------------------------------------------------------------------*
 
       CLEAR exv_url.
@@ -317,7 +317,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         APPEND ims_activities TO imt_activities.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE i056(zcrm) INTO lv_message.
 
@@ -326,7 +326,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
       ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE e058(zcrm) INTO lv_message.
 
@@ -337,10 +337,10 @@ METHOD if_ex_exec_methodcall_ppf~execute .
       ENDIF.
 
 *--------------------------------------------------------------------*
-* Uyarı oluşturma fonksiyonu
+* Generating alert
 *--------------------------------------------------------------------*
 
-*--> Uyarı kategorisi
+*--> Alert category
 
       CLEAR exs_container.
 
@@ -375,11 +375,11 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         IF sy-subrc <> 0.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
           cl_log_ppf=>add_message( ip_handle       = ip_application_log
                                    ip_problemclass = sppf_pclass_1 ).
-*   Sonucu belirle
+*   Set rp_status (result)
 
           rp_status = sppf_status_error.
 
@@ -389,13 +389,13 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
       ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
         MESSAGE e057(zcrm) INTO lv_message.
 
         cl_log_ppf=>add_message( ip_handle       = ip_application_log
                                  ip_problemclass = sppf_pclass_4 ).
-*   Sonucu belirle
+*   Set rp_status (result)
 
         rp_status = sppf_status_error.
 
@@ -404,7 +404,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
       ENDIF.
 
 *--------------------------------------------------------------------*
-* Kaydet
+* Save document
 *--------------------------------------------------------------------*
 
       CALL METHOD lc_action_execute->register_for_save
@@ -418,14 +418,14 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
   ELSE.
 
-*   Uygulama günlüğünü güncelle
+*   Update application log
 
     MESSAGE e045(zcrm) INTO lv_message.
 
     cl_log_ppf=>add_message( ip_handle       = ip_application_log
                              ip_problemclass = sppf_pclass_1 ).
 
-*   Sonucu belirle
+*   Set rp_status (result)
 
     rp_status = sppf_status_error.
 

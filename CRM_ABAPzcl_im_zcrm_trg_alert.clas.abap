@@ -36,7 +36,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
         cv_log_handle   TYPE balloghndl.
 
 *--------------------------------------------------------------------*
-* Makro: Seting elements in alert content
+* Macro: Seting elements in alert content
 *--------------------------------------------------------------------*
 
   DEFINE set_element.
@@ -153,7 +153,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 * Filling containers in alert content (a.k.a container elements)
 *--------------------------------------------------------------------*
 
-*--> Business transaction ID (object_id)
+*--> Business transaction ID (OBJECT_ID)
 
       CLEAR exs_orderadm_h.
 
@@ -200,7 +200,7 @@ METHOD if_ex_exec_methodcall_ppf~execute .
 
         IF exs_but000 IS NOT INITIAL.
 
-*   Fill container elements
+*   Fill container elements (MC_NAME1, MC_NAME2)
 
           set_element: 'MC_NAME1' exs_but000-mc_name1. " Note 821188
           set_element: 'MC_NAME2' exs_but000-mc_name2. " Note 821188
